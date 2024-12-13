@@ -6,13 +6,19 @@ import { createPortal } from 'react-dom';
 
 export function ProductCard({ userName, product }: { userName: string, product: Product }) {
   const [isEnlarged, setIsEnlarged] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   const handleClick = () => {
+    setIsAnimating(true);
     setIsEnlarged(true);
   };
 
   const handleClose = () => {
     setIsEnlarged(false);
+  };
+
+  const handleAnimationEnd = () => {
+    setIsAnimating(false);
   };
 
   return (
@@ -39,7 +45,11 @@ export function ProductCard({ userName, product }: { userName: string, product: 
 
       {isEnlarged && createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50" onClick={handleClose}>
-          <div className="relative z-60 w-11/12 max-w-3xl p-4 bg-white rounded-lg shadow-lg transform transition-transform duration-300 scale-110" onClick={(e) => e.stopPropagation()}>
+          <div
+            className={`relative z-60 w-11/12 max-w-3xl p-4 bg-white rounded-lg shadow-lg transform transition-transform duration-600 ${isAnimating ? (isEnlarged ? 'enlarge' : 'shrink') : ''}`}
+            onClick={(e) => e.stopPropagation()}
+            onAnimationEnd={handleAnimationEnd}
+          >
             <Card className="overflow-hidden">
               <CardContent className="p-0">
                 <div className="relative h-64 w-full">
