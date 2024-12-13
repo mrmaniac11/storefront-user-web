@@ -17,11 +17,11 @@ export function TabSection({ productCount, collectionCount, activeTab, onTabChan
       <TabsList className="w-full max-w-64 mx-auto">
         <TabsTrigger value="products" className="flex-1" onClick={() => onTabChange('products')}>
           Products
-          <Badge variant="secondary" className="ml-2">{productCount}</Badge>
+          {/* <Badge variant="secondary" className="ml-2">{productCount}</Badge> */}
         </TabsTrigger>
         <TabsTrigger value="collections" className="flex-1" onClick={() => onTabChange('collections')}>
           Collections
-          <Badge variant="secondary" className="ml-2">{collectionCount}</Badge>
+          {/* <Badge variant="secondary" className="ml-2">{collectionCount}</Badge> */}
         </TabsTrigger>
       </TabsList>
     </Tabs>
