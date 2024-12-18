@@ -62,32 +62,30 @@ export default function CollectionCard({
   };
 
   return (
-      <div style={{ height: '80vh'}}>
-          <InfiniteScroll
-            dataLength={collectionList.length}
-            next={fetchCollections}
-            hasMore={hasMoreCollections}
-            loader={<></>}
-            endMessage={<p className="text-center py-4">No more products</p>}
+    <InfiniteScroll
+      dataLength={collectionList.length}
+      next={fetchCollections}
+      hasMore={hasMoreCollections}
+      loader={<></>}
+      endMessage={<p className="text-center py-4">No more products</p>}
+      >
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+          {collectionList.map((collection, index) => (
+            <div
+              key={collection.id}
+              className="fade-in"
+              style={{ animationDelay: `${index % 10 * 0.1}s` }}
             >
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                {collectionList.map((collection, index) => (
-                  <div
-                    key={collection.id}
-                    className="fade-in"
-                    style={{ animationDelay: `${index % 10 * 0.1}s` }}
-                  >
-                    <CollectionCardComponent userName={userName} collection={collection as Collection} />
-                  </div>
-                ))}
+              <CollectionCardComponent userName={userName} collection={collection as Collection} />
             </div>
-            {isCollectionLoading && (
-            <div className="flex justify-center py-8 mt-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
-            </div>
-          )}
-
-          </InfiniteScroll>
+          ))}
       </div>
+      {isCollectionLoading && (
+      <div className="flex justify-center py-8 mt-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+      </div>
+    )}
+
+    </InfiniteScroll>
   );
 }

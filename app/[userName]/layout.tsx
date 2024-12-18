@@ -2,11 +2,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation'
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/lib/store';
+import { setUser } from '@/lib/slices/userSlice';
 import { Button } from '@/components/ui/button';
 import { User } from 'lucide-react';
 import { UserDrawer } from '@/components/user-drawer';
 import {SearchBar} from '@/components/search-bar';
-import {TabSection} from '@/components/tab-section';
+import { TabSection } from '@/components/tab-section';
+import networkService from '@/lib/network';
 
 export default function UserLayout({
   children,
@@ -32,9 +36,11 @@ export default function UserLayout({
   }
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [userName, setUserName] = useState<string | null>(null);
-  const [user, setUser] = useState<User>(userObject);
+  // const [user, setUser] = useState<User>(userObject);
   const [activeTab, setActiveTab] = useState<'products' | 'collections'>('products');
   const [currentPartURI, setCurrentPartURI] = useState<string>('products');
+  const dispatch = useDispatch();
+  const user = useSelector((state: RootState) => state.user);
   const router = useRouter();
 
   useEffect(() => {
@@ -48,19 +54,25 @@ export default function UserLayout({
 
   useEffect(() => {
     if (userName) {
-      const fetchUserData = async () => {
-        setUser({
-          name: "John Doe",
-          productCount: 156,
-          collectionCount: 23,
-          avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-        });
-        router.push(`/${userName}/${currentPartURI}`);
-      };
-      fetchUserData();
+      const userNameResponse = networkService.get('/meta', {
+        user_name: userName
+      });
+      if (userNameResponse.user_name || true) {
+        const fetchUserData = async () => {
+          dispatch(setUser({
+            name: userName,
+            productCount: 44,
+            collectionCount: 56,
+            avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+          }));
+          router.push(`/${userName}/${currentPartURI}`);
+        };
+        fetchUserData();
+      }
     }
   }, [userName, router]);
 
+  
   const redirectToCurrentActivePage = async (currentPartURI: string) => {
     setActiveTab(currentPartURI as 'products' | 'collections');
     router.push(`/${userName}/${currentPartURI}`);
@@ -89,14 +101,12 @@ export default function UserLayout({
         <SearchBar />
         <section className="py-4 mx-10">
           <TabSection
-            productCount={user?.productCount}
-            collectionCount={user?.collectionCount}
             activeTab={activeTab}
             onTabChange={(value) => redirectToCurrentActivePage(value)}
           />
         </section>
       </div>
-      <section className="py-4 min-h-[70vh]" style={{marginTop: '20vh'}}>
+      <section style={{marginTop: '30vh'}}>
         {children}  
       </section>
     </div>

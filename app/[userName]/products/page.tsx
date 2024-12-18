@@ -5,6 +5,7 @@ import { Product } from "@/lib/types";
 import InfiniteScroll from 'react-infinite-scroll-component';
 import { generateMockProducts } from '@/lib/mock-data';
 import { ProductCard as ProductCardComponent } from '@/components/product-card';
+import networkService from '@/lib/network';
 
 export default function ProductCard({
   params,
@@ -17,6 +18,8 @@ export default function ProductCard({
   const [productPage, setProductPage] = useState<number>(0);
   const [hasMoreProducts, setHasMoreProducts] = useState<boolean>(true);
   const [isProductLoading, setIsProductLoading] = useState<boolean>(true);
+  const [currentEnlargedProduct, setCurrentEnlargedProduct] = useState<Product | null>(null);
+  const [currentEnlargedProductIndex, setCurrentEnlargedProductIndex] = useState<number>(0);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -32,8 +35,7 @@ export default function ProductCard({
   }, [params]);
 
   useEffect(() => {
-    // generate mock products
-    resetData()
+    resetData();
     fetchProducts();
   }, []);
 
@@ -43,49 +45,87 @@ export default function ProductCard({
     setProductPage(0);
     setHasMoreProducts(true);
     setIsProductLoading(false);
-  }
+  };
 
   const fetchProducts = async () => {
     setIsProductLoading(true);
     const nextPage = productPage + 1;
     setProductPage(nextPage);
-    console.log('fetching products', nextPage)
-    const data = await generateMockProducts(nextPage, 30)  
-    if (data.length < 30) {
-      setHasMoreProducts(false);
-    }
-    setProductList([...productList, ...data]);
-    setIsProductLoading(false);
+    try {
+      // const products = await networkService.get('/products') || [];
+      // if (products.length < 30) {
+      //   setHasMoreProducts(false);
+      // }
+      // setProductList([...productList, ...data]);
 
+      const data = await generateMockProducts(nextPage, 30) || [];
+      console.log(data)
+      if (data.length < 30) {
+        setHasMoreProducts(false);
+      }
+      setProductList([...productList, ...data]);
+    } catch (error) {
+    } finally {
+      setIsProductLoading(false);
+    }
   };
 
-  return (
-      <div style={{ height: '80vh'}}>
-          <InfiniteScroll
-            dataLength={productList.length}
-            next={fetchProducts}
-            hasMore={hasMoreProducts}
-            loader={<></>}
-            endMessage={<p className="text-center py-4">No more products</p>}
-            >
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
-                {productList.map((product, index) => (
-                  <div
-                    key={product.id}
-                    className="fade-in"
-                    style={{ animationDelay: `${index % 10 * 0.1}s` }}
-                  >
-                    <ProductCardComponent userName={userName} product={product as Product} />
-                  </div>
-              ))}
-            </div>
-            {isProductLoading && (
-                <div className="flex justify-center pt-8 mt-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
-                </div>
-              )}
+  const hasReachedEndOfList = (index: number) => {
+    if (index === productList.length - 10) {
+      fetchProducts();
+    }
+  }
+  const handleProductNavigation = (index, direction) => {
+      if (direction === 'next') {
+        setCurrentEnlargedProduct(productList[index + 1]);
+        setCurrentEnlargedProductIndex(index + 1);
+        console.log(productList[index + 1]);
+      } else if (direction === 'prev') {
+        setCurrentEnlargedProduct(productList[index - 1]);
+        setCurrentEnlargedProductIndex(index - 1);
+      }
+      if (hasReachedEndOfList(index)) {
+        setCurrentEnlargedProductIndex(0);
+      }
+  }
 
-          </InfiniteScroll>
-      </div>
+  return (
+    <div style={{ }}>
+      <InfiniteScroll
+        dataLength={productList.length}
+        next={fetchProducts}
+        hasMore={hasMoreProducts}
+        loader={<></>}
+        endMessage={<p className="text-center py-4">No more products</p>}
+      >
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-6">
+          {productList.map((product, index) => (
+            <div
+              key={product.id}
+              className="fade-in"
+              style={{ animationDelay: `${index % 10 * 0.1}s` }}
+            >
+              <ProductCardComponent
+                userName={userName}
+                product={product}
+                index={index}
+                currentEnlargedProductIndex={currentEnlargedProductIndex}
+                setCurrentEnlargedProductIndex={setCurrentEnlargedProductIndex}
+                currentEnlargedProduct={currentEnlargedProduct}
+                setCurrentEnlargedProduct={setCurrentEnlargedProduct}
+                hasPrevProduct={currentEnlargedProductIndex > 0}
+                hasNextProduct={currentEnlargedProductIndex < productList.length - 1}
+                handleProductNavigation={handleProductNavigation}
+              />
+            </div>
+          ))}
+        </div>
+        {isProductLoading && (
+          <div className="flex justify-center pt-8 mt-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-500"></div>
+          </div>
+        )}
+      </InfiniteScroll>
+    </div>
   );
 }
