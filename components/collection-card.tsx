@@ -9,7 +9,6 @@ export function CollectionCard({ userName, collection }: { userName: string, col
   const router = useRouter();
 
   const handleClick = () => {
-    console.log(collection.id);
     router.push(`/${userName}/collections/${collection.id}`);
   };
 

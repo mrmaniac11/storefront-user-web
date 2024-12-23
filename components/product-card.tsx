@@ -103,16 +103,16 @@ export function ProductCard({
               </CardFooter>
             </Card>
             <div className="flex justify-between mt-4">
-              {hasPrevProduct && (
+              {hasPrevProduct ? (
                 <button onClick={handlePrev} className="p-2 bg-gray-200 rounded-full px-5">
                   Prev
                 </button>
-              )}
-              {hasNextProduct && (
+              ) : <span></span>}
+              {hasNextProduct ? (
                 <button onClick={handleNext} className="p-2 bg-gray-200 rounded-full px-5">
                   Next
                 </button>
-              )}
+              ) : <span></span>}
             </div>
           </div>
         </div>,

@@ -125,3 +125,10 @@
 .shrink {
   animation: shrink 0.3s ease-out forwards;
 }
+.user-text {
+  color: white;
+}
+
+.user-text:hover {
+  color: black;
+}

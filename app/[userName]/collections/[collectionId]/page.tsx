@@ -7,6 +7,7 @@ import CollectionDetails from '@/components/collection-details';
 import { ProductCard } from '@/components/product-card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { X } from 'lucide-react';
+import networkService from '@/lib/network';
 
 export default function CollectionModal({ params }: { params: { userName: string; collectionId: string } }) {
   const router = useRouter();
@@ -15,10 +16,7 @@ export default function CollectionModal({ params }: { params: { userName: string
   const [products, setProducts] = useState<Product[]>([]);
 
   useEffect(() => {
-    const fetchParams = async () => {
-      const resolvedParams = await params;
-      setUserName(resolvedParams.userName);
-      // Fetch collection and products data here
+    const loadMockData = (resolvedParams) => {
       const fetchedCollection: Collection = {
         id: resolvedParams.collectionId,
         name: 'Sample Collection',
@@ -100,9 +98,19 @@ export default function CollectionModal({ params }: { params: { userName: string
         }
       ];
       setProducts(fetchedProducts);
+    }
+    const fetchParams = async () => {
+      const resolvedParams = await params;
+      setUserName(resolvedParams.userName);
+      try {
+        const fetchedCollection: Collection = await networkService.get(`/collections/${resolvedParams.collectionId}`);
+        setCollection(fetchedCollection);
+      } catch {
+        
+      } finally {
+        loadMockData(resolvedParams);        
+      }
     };
-
-
     fetchParams();
   }, [params]);
 
@@ -112,18 +120,18 @@ export default function CollectionModal({ params }: { params: { userName: string
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div className="relative z-60 flex w-full max-w-7xl bg-white rounded-lg shadow-lg">
+      <div className="relative z-60 flex w-full max-w-7xl bg-white rounded-lg shadow-lg md:h-auto md:mt-0 mt-16 h-[calc(100%-4rem)]">
         <button className="absolute top-4 right-4" onClick={handleClose}>
           <X className="h-6 w-6" />
         </button>
         <div className='flex w-full mt-16'>
-          <div className="flex w-full" style={{height: '42rem'}}>
-            <div className="w-1/2 p-4">
+          <div className={`${window.innerWidth > 600 ? 'flex' : ''} w-full`} style={{height: '42rem'}}>
+            <div className="md:w-1/2 w-full p-4">
               {collection && <CollectionDetails params={{ userName, collection }} />}
             </div>
-            <div className="w-1/2 p-4 overflow-y-auto">
-              <ScrollArea>
-                <div className="grid grid-cols-1 gap-4">
+            <div className="md:w-1/2 w-full p-4 overflow-y-auto md:overflow-y-auto overflow-x-auto">
+              <ScrollArea orientation="horizontal">
+                <div className={`grid ${window.innerWidth < 600 ? 'grid-flow-col auto-cols-max' : 'grid-cols-1'} gap-4`}>
                   {products.map((product) => (
                     <div key={product.id} className="animate-slide-up">
                       <ProductCard userName={userName} product={product} />
@@ -134,7 +142,6 @@ export default function CollectionModal({ params }: { params: { userName: string
             </div>
           </div>
         </div>
-       
       </div>
     </div>
   );

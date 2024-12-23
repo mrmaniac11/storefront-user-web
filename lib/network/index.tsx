@@ -76,14 +76,20 @@ class NetworkService {
     const state: RootState = store.getState(); // Get the current state from the Redux store
     const user = state.user; // Get the user object from the state
     console.log(user);
-
-    try {
+    
+    if (endpoint !== '/meta') {
+      params = { ...params, user: user.name };
+    }
+    if (params.user || endpoint === '/meta') {
+      try {
         const response = await this.axiosInstance.get(endpoint, { params });
         return response.data;
       } catch (error) {
         console.error('GET request failed:', error);
         // throw error;
       }
+
+    }
   }
 
   // async post(endpoint: string, data: Record<string, unknown>, params: Record<string, unknown> = {}): Promise<AxiosResponse> {
